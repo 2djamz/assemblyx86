@@ -1,0 +1,159 @@
+
+; Assignment 6
+; This program recieves a positive integer input, finds all primes before 
+; the number and prints the primes to the console
+
+;6/1/24
+
+include Irvine32.inc
+
+.data
+; storing user data
+inputPrompt byte "please enter any postive number: ", 0
+negativeInputPrompt byte "enter a positive number.", 0
+primeStr byte "Primes found until the given number : ", 0
+
+.code
+main proc
+
+; main func
+
+  input_loop:                       
+      mov edx, OFFSET inputPrompt
+      call writeString                  
+      call readInt
+
+    ; check if input is negative so no infinite loop/error
+    ; if (input < 0) {...}
+    cmp eax, 0
+    JL invalid_input                   ; jumps to invalid input prompt if neg
+
+     mov edi, eax                      ; store input in edi
+
+     mov edx, OFFSET primeStr
+     call writeString                  ; print string of primes
+
+
+     comment !
+      C++ equivalent for main loop:
+
+    for(int num = 2; num < input; num++) {
+        if (isPrime(num)) {
+        cout << num << " ";
+        }
+     }
+
+    !
+      mov ecx, 2          
+      
+
+  Lmain:
+
+    mov esi, ecx                    ; storing count in esi for isPrime function
+    call isPrime                    
+                                   
+
+    ; if (isPrime(num) == false) {continue looping...}
+    cmp ebx,0                       ; conditional based on isPrime return
+    JE continue_loop                ; continue loop without printing value
+
+    xor eax,eax                     ; clear eax
+    mov eax,ecx
+    call writeDec                   ; print prime number
+
+    mov eax, ' '                    ; formatting for output
+    call writeChar
+
+    continue_loop:
+      ; num++
+      inc ecx                       ; counter
+      ; if (num < input) {continue looping...}
+      cmp ecx, edi                  
+      JNE Lmain
+
+
+    ; handling invalid input
+  invalid_input:
+    mov edx, OFFSET negativeInputPrompt
+    call writeString
+    JMP input_loop                       ; jump back to input loop
+
+
+	exit
+main endp
+
+
+
+
+
+; the isPrime func calculates if a num is prime based on user input,
+; value in esi register func returns 0 or 1 (composite = 0, prime = 1)
+
+isPrime PROC
+
+  ; preserve registers: push used registers to stack
+      push eax
+      push edx
+      push ecx
+      push esi
+
+      ; loop for isPrime
+      ; int count = num / 2;
+
+
+      mov eax,esi                     ; move to eax
+      mov ebx, 2
+      xor edx, edx
+      div ebx                         ; eax / 2
+
+      mov ecx,eax                     ; sets count as num
+
+  ; c++ equivalent: for ( i = count; i > 0; i-- ) { ... }
+
+  isPrimeX:                         ; isPrime loop
+    cmp ecx,1                     ;
+    JE cleanStack               ; c++ equivalent: if ( i == 1 ) { return true;}
+
+    mov eax,esi                   
+    sub edx,edx                   
+    div ecx                       ; eax / ecx
+    cmp edx,0                     ; if (num % i == 0) { return false; }
+    JE notPrime               
+
+    dec ecx                       ; decrement
+
+    ; if( count != 1) { continue loop }
+    cmp ecx,1
+    JNE isPrimeX
+
+	mov ebx,1
+	JMP cleanStack                ; if is prime -> return 1
+
+  notPrime:                   ; if is not prime -> return 0
+      xor ebx, ebx
+
+  cleanStack:                   ; clean stack
+      pop esi
+      pop ecx
+      pop edx
+      pop eax
+
+  ret
+
+isPrime ENDP
+
+end main
+
+
+
+
+; RUN
+
+comment !
+please enter any postive number: 23
+Primes found until the given number : 2 3 5 7 11 13 17 19 enter a positive number.please enter any postive number: 32
+Primes found until the given number : 2 3 5 7 11 13 17 19 23 29 31 enter a positive number.please enter any postive number: -32
+enter a positive number.please enter any postive number: 7
+Primes found until the given number : 2 3 5 enter a positive number.please enter any postive number:
+
+!
